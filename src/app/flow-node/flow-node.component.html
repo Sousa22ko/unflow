@@ -1,0 +1,6 @@
+<div #node class="node" 
+[style.transform]='translate()' 
+[style.width.px]="this.data()?.radius" 
+[style.height.px]="this.data()?.radius"> 
+  {{ this.data()?.id }} 
+</div>
