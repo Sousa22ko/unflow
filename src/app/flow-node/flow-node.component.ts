@@ -1,5 +1,6 @@
 import { Component, input } from '@angular/core';
 import { nodeType } from '../infraestructure/nodeType.model';
+import 'hammerjs';
 
 @Component({
   selector: 'app-flow-node',

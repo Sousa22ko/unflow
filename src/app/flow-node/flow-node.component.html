@@ -1,8 +1,9 @@
 <div #node class="node" 
 [style.transform]='translate()' 
 [style.width.px]="this.data()?.radius" 
-[style.height.px]="this.data()?.radius"> 
-  <!-- <div>
+[style.height.px]="this.data()?.radius"
+> 
+ <!-- <div>
     {{ 
       this.data()?.id 
     }} 
@@ -12,6 +13,18 @@
   </div>
   <div>
     vy: {{ (this.data()?.velocity!.y).toFixed(2) }} 
+  </div>
+
+
+  <div>
+    ox: {{ (this.data()?.positionOffset!.x).toFixed(2) }} 
+  </div>
+  <div>
+    oy: {{ (this.data()?.positionOffset!.y).toFixed(2) }} 
+  </div>
+
+  <div>
+    m: {{ this.data()?.momentum }} 
   </div>
 
   <!-- <div>

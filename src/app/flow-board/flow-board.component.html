@@ -1,3 +1,4 @@
 <div id="board" #board class="board board-size">
-  <app-flow-node *ngFor="let node of flowNodes" [data]="node"></app-flow-node>
+  <div class="center"></div>
+  <app-flow-node *ngFor="let node of flowNodes" [data]="node" (pan)="panEvent($event, node)" (panend)="onPanEnd($event, node)" (mousedown)="click($event, node)"></app-flow-node>
 </div>

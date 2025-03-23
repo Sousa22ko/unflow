@@ -1,10 +1,12 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
-import { createNodeHelper, nodeType } from '../infraestructure/nodeType.model';
+import { AfterViewInit, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
+import { createNodeHelperOptions, nodeType } from '../infraestructure/nodeType.model';
 import { FlowNodeComponent } from '../flow-node/flow-node.component';
 import { NgFor } from '@angular/common';
 import { NodeService } from '../node.service';
 import { Vector } from '../infraestructure/vector.model';
 import { rnd } from '../infraestructure/rng.util';
+import { FrictionService } from '../friction.service';
+import { FrictionMode } from '../infraestructure/frictionMode.model';
 
 @Component({
   selector: 'app-flow-board',
@@ -13,61 +15,54 @@ import { rnd } from '../infraestructure/rng.util';
   templateUrl: './flow-board.component.html',
   styleUrl: './flow-board.component.scss'
 })
-export class FlowBoardComponent implements OnInit, AfterViewInit{
+export class FlowBoardComponent implements AfterViewInit {
 
   @ViewChild('board') flowBoard: any;
 
   flowNodes: nodeType[] = [];
   boardHeight = 400;
   boardWidth = 800;
-  fricctionFactor = 0.9999;
+  frictionMode: FrictionMode;
+  frictionFactor = 0.9999;
 
-  constructor(private nodeService: NodeService) { }
 
-  ngOnInit(): void {
-    // this.flowNodes.push(createNodeHelper(this.nodeService.getUniqueId(), { x: 30, y: 270 }, { x: -0.5, y: 0.7 }, 80));
-    // this.flowNodes.push(createNodeHelper(this.nodeService.getUniqueId(), { x: -50, y: -270 }, { x: 0.5, y: 0.2 }, 20));
-    // this.flowNodes.push(createNodeHelper(this.nodeService.getUniqueId(), { x: -200, y: 20 }, { x: 0, y: -0.1 }, 35));
-    // this.flowNodes.push(createNodeHelper(this.nodeService.getUniqueId(), { x: 120, y: 0 }, { x: 0, y: 0 }, 35));
-    
-    this.flowNodes.push(createNodeHelper(this.nodeService.getUniqueId()));
-    this.flowNodes.push(createNodeHelper(this.nodeService.getUniqueId()));
-    this.flowNodes.push(createNodeHelper(this.nodeService.getUniqueId()));
-    this.flowNodes.push(createNodeHelper(this.nodeService.getUniqueId()));
-    this.flowNodes.push(createNodeHelper(this.nodeService.getUniqueId()));
-    
-    // this.flowNodes.push(createNodeHelper(this.nodeService.getUniqueId(), { x: 100, y: 10 }, { x: 2, y: 0 }, 80))
-    // this.flowNodes.push(createNodeHelper(this.nodeService.getUniqueId(), { x: 100, y: 5 }, { x: 2, y: 0 }, 80))
+  constructor(private nodeService: NodeService, private cdRef: ChangeDetectorRef, private frictionService: FrictionService) { }
+
+  adicionarNode() {
+    this.flowNodes.push(createNodeHelperOptions({ id: this.nodeService.getUniqueId(), velocity: { x: 100, y: 250 } }));
+    //, velocity: {x: 1, y: 2}
   }
-  
+
+  switchFrictionMode() {
+
+  }
+
   ngAfterViewInit(): void {
-    this.boardHeight = this.flowBoard.nativeElement.offsetHeight/2;
-    this.boardWidth = this.flowBoard.nativeElement.offsetWidth/2;
+    this.boardHeight = this.flowBoard.nativeElement.offsetHeight / 2;
+    this.boardWidth = this.flowBoard.nativeElement.offsetWidth / 2;
     this.animate();
   }
 
   private animate(): void {
     this.flowNodes = this.flowNodes.map(node => this.updatePosition(node));
     this.checkAllColisions();
+    this.cdRef.detectChanges();
     this.applyFricction();
     // setTimeout(() => {
-      requestAnimationFrame(() => this.animate())
-      //FPS
+    requestAnimationFrame(() => this.animate())
+    //FPS
     // }, 1000 / 3);
   }
-  
+
   // physics engine
-  
+
   private updatePosition(node: nodeType): nodeType {
-    return {
-      id: node.id,
-      position: { 
-        x: node.position.x + node.velocity.x, 
-        y: node.position.y + node.velocity.y 
-      },
-      velocity: node.velocity,
-      radius: node.radius
+    node.position = {
+      x: node.position.x + node.velocity.x,
+      y: node.position.y + node.velocity.y
     }
+
+    return node;
   }
 
   private checkAllColisions(): void {
@@ -82,16 +77,16 @@ export class FlowBoardComponent implements OnInit, AfterViewInit{
   }
 
   private checkCollisions(node1: nodeType, node2: nodeType): boolean {
-    const distance = Math.sqrt(Math.pow(node1.position.x - node2.position.x, 2) + Math.pow(node1.position.y - node2.position.y, 2));    
-    return distance <= (((node1.radius/2) + (node2.radius/2)) + 4); 
+    const distance = Math.sqrt(Math.pow(node1.position.x - node2.position.x, 2) + Math.pow(node1.position.y - node2.position.y, 2));
+    return distance <= (((node1.radius / 2) + (node2.radius / 2)) + 4);
     // +4 descontando 2 pixels de borda de cada node 
   }
 
   private checkWallCollision(node: nodeType): void {
-    if(node.position.x + node.radius >= this.boardWidth || node.position.x - node.radius <= -this.boardWidth) {
+    if (node.position.x + node.radius / 2 >= this.boardWidth + 2 || node.position.x - node.radius / 2 <= -this.boardWidth + 2) {
       node.velocity.x = -node.velocity.x;
     }
-    if(node.position.y + node.radius >= this.boardHeight || node.position.y - node.radius <= -this.boardHeight) {
+    if (node.position.y + node.radius / 2 >= this.boardHeight + 2 || node.position.y - node.radius / 2 <= -this.boardHeight + 2) {
       node.velocity.y = -node.velocity.y;
     }
   }
@@ -121,9 +116,9 @@ export class FlowBoardComponent implements OnInit, AfterViewInit{
       node1.velocity = vFinal1;
       node2.velocity = vFinal2;
     }
-    if(xVelocityDiff * xDist + yVelocityDiff * yDist == 0) {
-      node1.velocity = { x: rnd(-2, 2), y: rnd(-2, 2) } 
-      node2.velocity = { x: rnd(-2, 2), y: rnd(-2, 2) } 
+    if (xVelocityDiff * xDist + yVelocityDiff * yDist == 0) {
+      node1.velocity = { x: rnd(-2, 2), y: rnd(-2, 2) }
+      node2.velocity = { x: rnd(-2, 2), y: rnd(-2, 2) }
     }
   }
 
@@ -135,13 +130,75 @@ export class FlowBoardComponent implements OnInit, AfterViewInit{
   }
 
   private applyFricction(): void {
-    this.flowNodes = this.flowNodes.map(node => {
-      return {
-        id: node.id,
-        position: node.position,
-        velocity: { x: node.velocity.x * this.fricctionFactor, y: node.velocity.y * this.fricctionFactor },
-        radius: node.radius
+    this.frictionMode = this.frictionService.getCurrentFrictionMode();
+    if (this.frictionMode.value == 0) { return } // sem fricção
+    if (this.frictionMode.value == 1) { // fricção fixa
+      this.flowNodes = this.flowNodes.map(node => {
+        node.velocity = { x: node.velocity.x * this.frictionFactor, y: node.velocity.y * this.frictionFactor };
+        return node;
+      });
+    }
+    if (this.frictionMode.value == 2) { // fricção exponencial
+      this.flowNodes = this.flowNodes.map(node => {
+        let velocityTotal = Math.sqrt(node.velocity.x ** 2 + node.velocity.y ** 2);
+        let friction = Math.pow(this.frictionFactor, velocityTotal)
+        
+        // Aplica fricção suavemente
+        node.velocity.x *= friction;
+        node.velocity.y *= friction;
+
+        return node;
+      });
+    }
+  }
+
+  // possivelmente possui alguns problemas
+  panEvent(event: any, node: nodeType): void {
+    this.accessNode(node, n => {
+      n.position = { x: event.deltaX + n.positionOffset.x, y: event.deltaY + n.positionOffset.y };
+      n.momentum = Math.max(n.momentum, Math.abs(n.velocity.x) + Math.abs(n.velocity.y));
+      n.velocity = { x: 0, y: 0 };
+    })
+
+  }
+
+  onPanEnd(event: any, node: nodeType): void {
+    console.log(event, this.vectorConversion(event.angle, node.momentum), node.momentum);
+    this.flowNodes = this.flowNodes.map(n => {
+      if (n.id === node.id) {
+        n.positionOffset = { x: n.position.x, y: n.position.y };
+        n.velocity = this.vectorConversion(event.angle, node.momentum);
+        n.momentum = 0;
       }
+      return n;
+    });
+  }
+
+  // converte o angulo do evento do pan (hammerJs) para um vetor de velocidade para quando soltar o click ele retornar ao movimento
+  private vectorConversion(angle: number, intensidade: number): Vector {
+    let radiano = angle * (Math.PI / 180);
+    return { x: (Math.cos(radiano)) * intensidade, y: -Math.sin(radiano) * intensidade };
+  }
+
+  // chamado no instante que o usuario clica no node (prevem ele de mover e registra o momentum)
+  // possui alguns problemas
+  click(event: any, node: nodeType) {
+    console.log(event)
+    this.accessNode(node, n => {
+      n.positionOffset = { x: event.clientX - this.boardWidth, y: event.clientY - this.boardHeight };
+      n.momentum = Math.sqrt(Math.max(n.momentum, Math.abs(n.velocity.x) + Math.abs(n.velocity.y)));
+      n.velocity = { x: 0, y: 0 };
+    });
+  }
+
+
+  // generico para acessar o node
+  private accessNode(node: nodeType, callback: (value: nodeType) => void): void {
+    this.flowNodes = this.flowNodes.map(n => {
+      if (n.id === node.id) {
+        callback(n)
+      }
+      return n;
     });
   }
 
