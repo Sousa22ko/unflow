@@ -1,6 +1,6 @@
 import { Component, output } from '@angular/core';
 import { FrictionService } from '../friction.service';
-import { FRICTION_MODES, FrictionMode } from '../infraestructure/frictionMode.model';
+import { DEFAULT_FRICTION_MODE, FRICTION_MODES, FrictionMode } from '../infraestructure/frictionMode.model';
 
 @Component({
   selector: 'app-header',
@@ -13,7 +13,7 @@ export class HeaderComponent {
 
   adiconar = output<void>();
   frictionSpecter: FrictionMode[] = FRICTION_MODES
-  frictionMode = this.frictionSpecter[1];
+  frictionMode = DEFAULT_FRICTION_MODE;
 
   constructor(private frictionService: FrictionService) { }
 
