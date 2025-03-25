@@ -1,14 +1,15 @@
 import { rnd } from "./rng.util";
 import { Vector } from "./vector.model";
+import { Vertex } from "./vertex.model";
 
 export interface nodeType {
-
   id: number;
   position: Vector;
   positionOffset: Vector;
   velocity: Vector;
   momentum: number;
   radius: number;
+  vertex: Vertex [];
 }
 
 export interface NodeOption {
@@ -18,9 +19,10 @@ export interface NodeOption {
   velocity?: Vector;
   momentum?: number;
   radius?: number;
+  vertex?: Vertex [];
 }
 
-export function createNodeHelper(id?: number, position?: Vector, velocity?: Vector, radius?: number): nodeType {
+export function createNodeHelper(id?: number, position?: Vector, velocity?: Vector, radius?: number, vertex?: Vertex[]): nodeType {
   return {
     id: id ?? -1,
     // position: position ?? { x: rnd(-400, 400), y: rnd(-400, 400) },
@@ -29,7 +31,8 @@ export function createNodeHelper(id?: number, position?: Vector, velocity?: Vect
     momentum: 0,
     // velocity: velocity ?? { x: rnd(-2, 2), y: rnd(-2, 2) }, 
     velocity: velocity ?? { x: 0, y: 0 }, 
-    radius: radius ?? rnd(100, 200)
+    radius: radius ?? rnd(100, 200),
+    vertex: vertex ?? []
   };
 }
 
@@ -41,6 +44,7 @@ export function createNodeHelperOptions(option: NodeOption): nodeType {
     positionOffset: { x: 0, y: 0 },
     momentum: 0,
     velocity: option.velocity ?? { x: 0, y: 0 }, 
-    radius: option.radius ?? rnd(100, 200)
+    radius: option.radius ?? rnd(100, 200),
+    vertex: option.vertex ?? []
   };
 }

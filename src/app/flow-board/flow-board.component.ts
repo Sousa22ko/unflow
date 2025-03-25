@@ -7,10 +7,12 @@ import { Vector } from '../infraestructure/vector.model';
 import { rnd } from '../infraestructure/rng.util';
 import { FrictionService } from '../friction.service';
 import { FrictionMode } from '../infraestructure/frictionMode.model';
+import { Vertex } from '../infraestructure/vertex.model';
+import { VertexComponent } from "../vertex/vertex.component";
 
 @Component({
   selector: 'app-flow-board',
-  imports: [FlowNodeComponent, NgFor],
+  imports: [FlowNodeComponent, NgFor, VertexComponent],
   providers: [NodeService],
   templateUrl: './flow-board.component.html',
   styleUrl: './flow-board.component.scss'
@@ -20,31 +22,64 @@ export class FlowBoardComponent implements AfterViewInit {
   @ViewChild('board') flowBoard: any;
 
   flowNodes: nodeType[] = [];
+  flowVertex: Vertex[] = []
+
   boardHeight = 400;
   boardWidth = 800;
   frictionMode: FrictionMode;
   frictionFactor = 0.9999;
 
 
-  constructor(private nodeService: NodeService, private cdRef: ChangeDetectorRef, private frictionService: FrictionService) { }
+  constructor(private nodeService: NodeService, private cdRef: ChangeDetectorRef, private frictionService: FrictionService) {
 
-  adicionarNode() {
-    this.flowNodes.push(createNodeHelperOptions({ id: this.nodeService.getUniqueId(), velocity: { x: 100, y: 250 } }));
-    //, velocity: {x: 1, y: 2}
+    let node1: nodeType = createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: 300, y: 200 }, velocity: { x: 2, y: 7 } })
+    let node2: nodeType = createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: 300, y: -200 }, velocity: { x: -9, y: 2 } })
+    let vertexNovo: Vertex = {id: 1, node1, node2, type: 0}
+    node1.vertex.push(vertexNovo)
+    node2.vertex.push(vertexNovo)
+    // precisa?
+    vertexNovo.node1 = node1
+    vertexNovo.node2 = node2;
+
+    this.flowNodes.push(node1);
+    this.flowNodes.push(node2);
+    this.flowVertex.push(vertexNovo)
   }
 
-  switchFrictionMode() {
+  adicionarNode() {
+    this.flowNodes.push(createNodeHelperOptions({ id: this.nodeService.getUniqueId(), velocity: { x: 10, y: 25 } }));
+    // , velocity: {x: 1, y: 2}
 
+    if (this.flowNodes.length % 2 == 0) {
+      console.log("2")
+      let node1 = this.flowNodes[this.flowNodes.length - 2]
+      let node2 = this.flowNodes[this.flowNodes.length - 1]
+      let vertex: Vertex = { id: 1,  node1, node2 , type: 0 }
+      console.log(vertex)
+      node1.vertex.push(vertex)
+      node2.vertex.push(vertex)
+
+      this.accessNode(this.flowNodes[this.flowNodes.length - 2], n => {
+        n = node1;
+      })
+
+      this.accessNode(this.flowNodes[this.flowNodes.length - 1], n => {
+        n = node2;
+      })
+      this.flowVertex.push(vertex)
+    }
   }
 
   ngAfterViewInit(): void {
     this.boardHeight = this.flowBoard.nativeElement.offsetHeight / 2;
     this.boardWidth = this.flowBoard.nativeElement.offsetWidth / 2;
+    console.log(this.boardWidth*2, this.boardHeight*2)
     this.animate();
   }
 
   private animate(): void {
     this.flowNodes = this.flowNodes.map(node => this.updatePosition(node));
+    this.flowNodes = this.flowNodes.map(node => this.updateVertexPosition(node));
     this.checkAllColisions();
     this.cdRef.detectChanges();
     this.applyFricction();
@@ -61,6 +96,27 @@ export class FlowBoardComponent implements AfterViewInit {
       x: node.position.x + node.velocity.x,
       y: node.position.y + node.velocity.y
     }
+
+    return node;
+  }
+
+  private updateVertexPosition(node: nodeType): nodeType {
+    node.vertex.map(vertex => {
+      if (vertex.node1.id == node.id) {
+        vertex.node1 = node
+      }
+      if (vertex.node2.id == node.id) {
+        vertex.node2 = node
+      }
+
+      this.flowVertex.map(vertexList => {
+        if(vertex.id == vertexList.id) {
+          return vertex; // novo vertex atualizado
+        }
+        return vertexList
+      })
+    })
+
 
     return node;
   }
@@ -130,6 +186,7 @@ export class FlowBoardComponent implements AfterViewInit {
   }
 
   private applyFricction(): void {
+
     this.frictionMode = this.frictionService.getCurrentFrictionMode();
     if (this.frictionMode.value == 0) { return } // sem fricção
     if (this.frictionMode.value == 1) { // fricção fixa
@@ -142,11 +199,12 @@ export class FlowBoardComponent implements AfterViewInit {
       this.flowNodes = this.flowNodes.map(node => {
         let velocityTotal = Math.sqrt(node.velocity.x ** 2 + node.velocity.y ** 2);
         let friction = Math.pow(this.frictionFactor, velocityTotal)
-        
+
         // Aplica fricção suavemente
         node.velocity.x *= friction;
         node.velocity.y *= friction;
 
+        this.cdRef.detectChanges();
         return node;
       });
     }
