@@ -1,0 +1,17 @@
+.modal {
+  margin: 5%;
+  overflow: hidden;
+}
+.center {
+  margin-left: 15px;
+}
+
+.matcardcontent{
+  margin: 10px;
+  margin-left: 0px;
+}
+
+.posicao, .velocidade {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}

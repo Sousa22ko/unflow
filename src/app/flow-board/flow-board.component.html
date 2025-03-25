@@ -1,5 +1,16 @@
-<div id="board" #board class="board board-size">
-  <div class="center"></div>
-  <app-flow-node *ngFor="let node of flowNodes" [data]="node" (pan)="panEvent($event, node)" (panend)="onPanEnd($event, node)" (mousedown)="click($event, node)"/>
+<div id="board" #board class="board board-size" (keydown.q)="openMenu($event)">
+  <!-- center é o + no meio da tela -->
+  <div class="center"></div> 
+  <!-- <app-flow-modal/> -->
+  <app-flow-node 
+    *ngFor="let node of flowNodes" 
+    [data]="node" 
+    (pan)="panEvent($event, node)" 
+    (panend)="onPanEnd($event, node)" 
+    (mousedown)="click($event, node)"
+    (mouseenter)="onMouseEnter($event, node)"
+    (mouseleave)="onMouseLeave($event, node)"
+    (keydown.q)="openMenu($event)"
+    />
   <app-flow-vertex class="z" *ngFor="let vertex of flowVertex" [data]="vertex"/>
 </div>

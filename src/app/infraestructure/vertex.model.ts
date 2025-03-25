@@ -1,6 +1,6 @@
 import { nodeType } from "./nodeType.model";
 
-export interface Vertex {
+export interface vertexType {
 
   id: number
   node1: nodeType

@@ -1,6 +1,6 @@
 import { rnd } from "./rng.util";
 import { Vector } from "./vector.model";
-import { Vertex } from "./vertex.model";
+import { vertexType } from "./vertex.model";
 
 export interface nodeType {
   id: number;
@@ -9,7 +9,7 @@ export interface nodeType {
   velocity: Vector;
   momentum: number;
   radius: number;
-  vertex: Vertex [];
+  vertex: vertexType [];
 }
 
 export interface NodeOption {
@@ -19,10 +19,10 @@ export interface NodeOption {
   velocity?: Vector;
   momentum?: number;
   radius?: number;
-  vertex?: Vertex [];
+  vertex?: vertexType [];
 }
 
-export function createNodeHelper(id?: number, position?: Vector, velocity?: Vector, radius?: number, vertex?: Vertex[]): nodeType {
+export function createNodeHelper(id?: number, position?: Vector, velocity?: Vector, radius?: number, vertex?: vertexType[]): nodeType {
   return {
     id: id ?? -1,
     // position: position ?? { x: rnd(-400, 400), y: rnd(-400, 400) },

@@ -6,4 +6,9 @@
   position: absolute;
   place-self: anchor-center;
   background-color: lightgray;
+  transition: box-shadow 0.3s ease-in-out; /* transição suave */
+}
+
+.node:hover {
+  box-shadow: 0 0 15px 5px green; /* brilho suave */
 }

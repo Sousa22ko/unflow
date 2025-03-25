@@ -1,8 +1,13 @@
 <div class="header">
-  <button class="header-button" (click)="addNode()">
+  <button mat-stroked-button class="header-button" (click)="addNode()">
     adicionar node
   </button>
-  <button class="header-button" (click)="frictionToggle()">
+
+  <button mat-stroked-button class="header-button" (click)="frictionToggle()">
     {{ frictionMode.key }}
+  </button>
+
+  <button mat-stroked-button class="header-button" (click)="pauseResumeToggle()">
+    pausar/resume
   </button>
 </div>

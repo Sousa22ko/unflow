@@ -1,22 +1,21 @@
 import { AfterViewInit, Component, ElementRef, input, ViewChild } from '@angular/core';
-import { Vertex } from '../infraestructure/vertex.model';
+import { vertexType } from '../infraestructure/vertex.model';
 
 @Component({
   selector: 'app-flow-vertex',
   imports: [],
-  templateUrl: './vertex.component.html',
-  styleUrl: './vertex.component.scss'
+  templateUrl: './flow-vertex.component.html',
+  styleUrl: './flow-vertex.component.scss'
 })
 export class VertexComponent implements AfterViewInit{
 
   @ViewChild('svg') svgElement: ElementRef
 
-  data = input<Vertex>();
-  heigh = window.innerHeight
-  width = window.innerWidth
+  data = input<vertexType>();
+  heigh: number
+  width: number
 
   ngAfterViewInit(): void {
-    console.log(this.svgElement)
     this.heigh = this.svgElement.nativeElement.clientHeight
     this.width = this.svgElement.nativeElement.clientWidth
   }

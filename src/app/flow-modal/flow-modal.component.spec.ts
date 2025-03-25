@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { VertexComponent } from './vertex.component';
+import { FlowModalComponent } from './flow-modal.component';
 
-describe('VertexComponent', () => {
-  let component: VertexComponent;
-  let fixture: ComponentFixture<VertexComponent>;
+describe('FlowModalComponent', () => {
+  let component: FlowModalComponent;
+  let fixture: ComponentFixture<FlowModalComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VertexComponent]
+      imports: [FlowModalComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(VertexComponent);
+    fixture = TestBed.createComponent(FlowModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

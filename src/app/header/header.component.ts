@@ -1,10 +1,12 @@
 import { Component, output } from '@angular/core';
 import { FrictionService } from '../friction.service';
 import { DEFAULT_FRICTION_MODE, FRICTION_MODES, FrictionMode } from '../infraestructure/frictionMode.model';
+import { MatButtonModule } from '@angular/material/button';
+
 
 @Component({
   selector: 'app-header',
-  imports: [],
+  imports: [MatButtonModule],
   providers: [],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
@@ -12,6 +14,7 @@ import { DEFAULT_FRICTION_MODE, FRICTION_MODES, FrictionMode } from '../infraest
 export class HeaderComponent {
 
   adiconar = output<void>();
+  pauseResume = output<void>();
   frictionSpecter: FrictionMode[] = FRICTION_MODES
   frictionMode = DEFAULT_FRICTION_MODE;
 
@@ -22,8 +25,11 @@ export class HeaderComponent {
   }
 
   frictionToggle() {
-    this.frictionMode = this.frictionSpecter[this.frictionMode.value + 1 == 3 ?  0 : this.frictionMode.value + 1]
+    this.frictionMode = this.frictionSpecter[this.frictionMode.value + 1 == 3 ? 0 : this.frictionMode.value + 1]
     this.frictionService.setCurrentFrictionMode(this.frictionMode);
   }
 
+  pauseResumeToggle(){
+    this.pauseResume.emit();
+  }
 }

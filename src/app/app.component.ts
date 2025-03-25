@@ -17,4 +17,8 @@ export class AppComponent {
   adicionarNode() {
     this.board.adicionarNode();
   }
+
+  pauseResume() {
+    this.board.pauseResume();
+  }
 }
