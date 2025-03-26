@@ -8,7 +8,7 @@ import { rnd } from '../infraestructure/rng.util';
 import { FrictionService } from '../friction.service';
 import { FrictionMode } from '../infraestructure/frictionMode.model';
 import { vertexType } from '../infraestructure/vertex.model';
-import { VertexComponent } from "../vertex/flow-vertex.component";
+import { VertexComponent } from "../flow-vertex/flow-vertex.component";
 import { FlowModalComponent } from "../flow-modal/flow-modal.component";
 import { MatDialog } from '@angular/material/dialog';
 import { modalType } from '../infraestructure/modalType.model';
@@ -41,7 +41,7 @@ export class FlowBoardComponent implements AfterViewInit {
 
     let node1: nodeType = createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: 300, y: 200 }, velocity: { x: 10, y: 0 } })
     let node2: nodeType = createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: 300, y: -200 }, velocity: { x: 0, y: 0 } })
-    let vertexNovo: vertexType = { id: 1, node1, node2, type: 0 }
+    let vertexNovo: vertexType = { id: 0, node1, node2, type: 0 }
     node1.vertex.push(vertexNovo)
     node2.vertex.push(vertexNovo)
     // precisa?
@@ -53,7 +53,7 @@ export class FlowBoardComponent implements AfterViewInit {
     this.flowVertex.push(vertexNovo)
 
     this.flowNodes.push(createNodeHelperOptions({id: this.nodeService.getUniqueId(), position: {x: 0, y: 0}}))    
-    this.flowNodes.push(createNodeHelperOptions({id: this.nodeService.getUniqueId(), position: {x: -200, y: 0}}))    
+    this.flowNodes.push(createNodeHelperOptions({id: this.nodeService.getUniqueId(), position: {x: -400, y: -200}}))    
   }
 
   // ----------------- animation -----------------
@@ -61,7 +61,7 @@ export class FlowBoardComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     this.boardHeight = this.flowBoard.nativeElement.offsetHeight / 2;
     this.boardWidth = this.flowBoard.nativeElement.offsetWidth / 2;
-    console.log(this.boardWidth * 2, this.boardHeight * 2)
+    this.cdRef.detectChanges();
     this.animate();
   }
 
@@ -308,6 +308,7 @@ export class FlowBoardComponent implements AfterViewInit {
   onMouseLeave(event: any, node: nodeType): void {
     this.nodeHovered = undefined;
   }
+
   
   // chamado ao pressionar Q sobre um node
   @HostListener('document:keydown', ['$event'])
@@ -315,14 +316,24 @@ export class FlowBoardComponent implements AfterViewInit {
     
     if ((event.key === 'q' || event.key === 'Q') && !!this.nodeHovered ) {
       this.isPaused = true;
-      this.dialog.open(FlowModalComponent, {data: { selectedNode: this.nodeHovered, flowNodes: this.flowNodes, flowVertex: this.flowVertex } as modalType})
 
+      let data: modalType = { selectedNode: this.nodeHovered, flowNodes: this.flowNodes, flowVertex: this.flowVertex }
+      console.log("data", data)
+      this.dialog.open(FlowModalComponent, {data})
+      
       this.dialog.afterAllClosed.subscribe(response => {
         if(this.isPaused) {
           this.isPaused = false;
           this.animate();
         }
       })
+    }
+
+
+    // console de testes
+    if(event.key === 'l'|| event.key === 'L') {
+      console.log("flow nodes", this.flowNodes)
+      console.log("flow vertex", this.flowVertex)
     }
   }
 

@@ -1,6 +1,6 @@
 <mat-dialog-content>
   <div class="modal">
-    
+
     <mat-card>
       <mat-card-title>
         <div class="center">
@@ -13,18 +13,18 @@
         </div>
         <div class="posicao">
           <div class="px">
-            Posição X: <b>{{ this.data.selectedNode.position.x }}</b>
+            Posição X: <b>{{ this.data.selectedNode.position.x.toFixed(2) }}</b>
           </div>
           <div class="py">
-            Posição Y: <b>{{ this.data.selectedNode.position.y }}</b>
+            Posição Y: <b>{{ this.data.selectedNode.position.y.toFixed(2) }}</b>
           </div>
         </div>
         <div class="velocidade">
           <div class="dx">
-            Velocidade X: <b>{{ this.data.selectedNode.velocity.x }}</b>
+            Velocidade X: <b>{{ this.data.selectedNode.velocity.x.toFixed(2) }}</b>
           </div>
           <div class="dy">
-            Velocidade Y: <b>{{ this.data.selectedNode.velocity.y }}</b>
+            Velocidade Y: <b>{{ this.data.selectedNode.velocity.y.toFixed(2) }}</b>
           </div>
         </div>
       </mat-card-content>
@@ -37,9 +37,19 @@
     </h3>
     <mat-table [dataSource]="this.vertexList">
 
-      <ng-container matColumnDef="node2">
+      <ng-container matColumnDef="node">
         <th mat-header-cell *matHeaderCellDef> Node id: </th>
         <td mat-cell *matCellDef="let node"> {{ node.node2.id }} </td>
+      </ng-container>
+
+      <!-- Coluna de ações (Remover) -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef> Ações </th>
+        <td mat-cell *matCellDef="let vertex">
+          <button mat-icon-button color="warn" (click)="removeVertex(vertex)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
       </ng-container>
 
 
