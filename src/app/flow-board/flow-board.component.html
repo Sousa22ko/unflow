@@ -13,4 +13,5 @@
     (keydown.q)="openMenu($event)"
     />
   <app-flow-vertex class="z" *ngFor="let vertex of flowVertex" [data]="vertex"/>
+  <app-flow-vertex class="z" [data]="temporaryVertex" *ngIf="temporaryVertex && temporaryVertex.node1"/>
 </div>

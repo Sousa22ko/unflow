@@ -1,13 +1,13 @@
 import { AfterViewInit, ChangeDetectorRef, Component, HostListener, inject, ViewChild } from '@angular/core';
 import { createNodeHelperOptions, nodeType } from '../infraestructure/nodeType.model';
 import { FlowNodeComponent } from '../flow-node/flow-node.component';
-import { NgFor } from '@angular/common';
+import { CommonModule, NgFor } from '@angular/common';
 import { NodeService } from '../node.service';
 import { Vector } from '../infraestructure/vector.model';
 import { rnd } from '../infraestructure/rng.util';
 import { FrictionService } from '../friction.service';
 import { FrictionMode } from '../infraestructure/frictionMode.model';
-import { vertexType } from '../infraestructure/vertex.model';
+import { vertexType } from '../infraestructure/vertexType.model';
 import { VertexComponent } from "../flow-vertex/flow-vertex.component";
 import { FlowModalComponent } from "../flow-modal/flow-modal.component";
 import { MatDialog } from '@angular/material/dialog';
@@ -15,7 +15,7 @@ import { modalType } from '../infraestructure/modalType.model';
 
 @Component({
   selector: 'app-flow-board',
-  imports: [NgFor, FlowNodeComponent, VertexComponent],
+  imports: [NgFor, CommonModule, FlowNodeComponent, VertexComponent],
   providers: [],
   templateUrl: './flow-board.component.html',
   styleUrl: './flow-board.component.scss'
@@ -33,15 +33,18 @@ export class FlowBoardComponent implements AfterViewInit {
   frictionMode: FrictionMode;
   frictionFactor = 0.9999;
 
-  nodeHovered: nodeType | undefined;
+  nodeSelecionado: nodeType | undefined;
+
   isPaused: boolean = false;
 
+  temporaryVertex: vertexType | undefined;
+  temporaryNodeVertex: nodeType;
 
-  constructor(private nodeService: NodeService, private cdRef: ChangeDetectorRef, private frictionService: FrictionService, ) {
+  constructor(private nodeService: NodeService, private cdRef: ChangeDetectorRef, private frictionService: FrictionService,) {
 
     let node1: nodeType = createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: 300, y: 200 }, velocity: { x: 10, y: 0 } })
     let node2: nodeType = createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: 300, y: -200 }, velocity: { x: 0, y: 0 } })
-    let vertexNovo: vertexType = { id: 0, node1, node2, type: 0 }
+    let vertexNovo: vertexType = { id: 0, node1, node2, vertexStyleType: 0 }
     node1.vertex.push(vertexNovo)
     node2.vertex.push(vertexNovo)
     // precisa?
@@ -52,8 +55,8 @@ export class FlowBoardComponent implements AfterViewInit {
     this.flowNodes.push(node2);
     this.flowVertex.push(vertexNovo)
 
-    this.flowNodes.push(createNodeHelperOptions({id: this.nodeService.getUniqueId(), position: {x: 0, y: 0}}))    
-    this.flowNodes.push(createNodeHelperOptions({id: this.nodeService.getUniqueId(), position: {x: -400, y: -200}}))    
+    this.flowNodes.push(createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: 0, y: 0 } }))
+    this.flowNodes.push(createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: -400, y: -200 } }))
   }
 
   // ----------------- animation -----------------
@@ -66,7 +69,7 @@ export class FlowBoardComponent implements AfterViewInit {
   }
 
   private animate(): void {
-    if(!this.isPaused){
+    if (!this.isPaused) {
       this.flowNodes = this.flowNodes.map(node => this.updatePosition(node));
       this.flowNodes = this.flowNodes.map(node => this.updateVertexPosition(node));
       this.checkAllColisions();
@@ -184,10 +187,10 @@ export class FlowBoardComponent implements AfterViewInit {
     this.frictionMode = this.frictionService.getCurrentFrictionMode();
 
     // sem fricção
-    if (this.frictionMode.value == 0) { return } 
+    if (this.frictionMode.value == 0) { return }
 
     // fricção fixa
-    if (this.frictionMode.value == 1) { 
+    if (this.frictionMode.value == 1) {
       this.flowNodes = this.flowNodes.map(node => {
         node.velocity = { x: node.velocity.x * this.frictionFactor, y: node.velocity.y * this.frictionFactor };
         return node;
@@ -195,7 +198,7 @@ export class FlowBoardComponent implements AfterViewInit {
     }
 
     // fricção exponencial
-    if (this.frictionMode.value == 2) { 
+    if (this.frictionMode.value == 2) {
       this.flowNodes = this.flowNodes.map(node => {
         let velocityTotal = Math.sqrt(node.velocity.x ** 2 + node.velocity.y ** 2);
         let friction = Math.pow(this.frictionFactor, velocityTotal)
@@ -229,29 +232,24 @@ export class FlowBoardComponent implements AfterViewInit {
     });
   }
 
+  private addVertex(): void {
+
+    // adiciona o vertex
+    let node1 = this.temporaryVertex?.node1
+    let node2 = this.nodeSelecionado
+    let vertex: vertexType = { id: this.nodeService.getUniqueIdVertex(), node1: node1!, node2: node2!, vertexStyleType: 0 }
+
+    node1!.vertex.push(vertex)
+    node2!.vertex.push(vertex)
+
+    // atualiza as listas de node e vertex
+    this.flowVertex.push(vertex)
+  }
 
   // ----------------- events menu -----------------
 
   adicionarNode() {
     this.flowNodes.push(createNodeHelperOptions({ id: this.nodeService.getUniqueId(), velocity: { x: 0, y: 0 } }));
-    // , velocity: {x: 1, y: 2}
-
-    // if (this.flowNodes.length % 2 == 0) {
-    //   let node1 = this.flowNodes[this.flowNodes.length - 2]
-    //   let node2 = this.flowNodes[this.flowNodes.length - 1]
-    //   let vertex: vertexType = { id: 1, node1, node2, type: 0 }
-    //   node1.vertex.push(vertex)
-    //   node2.vertex.push(vertex)
-
-    //   this.accessNode(this.flowNodes[this.flowNodes.length - 2], n => {
-    //     n = node1;
-    //   })
-
-    //   this.accessNode(this.flowNodes[this.flowNodes.length - 1], n => {
-    //     n = node2;
-    //   })
-    //   this.flowVertex.push(vertex)
-    // }
   }
 
   pauseResume() {
@@ -298,42 +296,92 @@ export class FlowBoardComponent implements AfterViewInit {
       return n;
     });
   }
- 
+
   // hover sobre o node
   onMouseEnter(event: any, node: nodeType): void {
-    this.nodeHovered = node;
+    this.nodeSelecionado = node;
   }
 
   // sai do hover
   onMouseLeave(event: any, node: nodeType): void {
-    this.nodeHovered = undefined;
+    this.nodeSelecionado = undefined;
   }
 
-  
-  // chamado ao pressionar Q sobre um node
+
+  // chamado ao pressionar uma tecla
   @HostListener('document:keydown', ['$event'])
   openMenu(event: any): void {
-    
-    if ((event.key === 'q' || event.key === 'Q') && !!this.nodeHovered ) {
+
+    // abrir o menu do node
+    if ((event.key === 'q' || event.key === 'Q') && !!this.nodeSelecionado) {
       this.isPaused = true;
 
-      let data: modalType = { selectedNode: this.nodeHovered, flowNodes: this.flowNodes, flowVertex: this.flowVertex }
+      let data: modalType = { selectedNode: this.nodeSelecionado, flowNodes: this.flowNodes, flowVertex: this.flowVertex }
       console.log("data", data)
-      this.dialog.open(FlowModalComponent, {data})
-      
+      this.dialog.open(FlowModalComponent, { data })
+
       this.dialog.afterAllClosed.subscribe(response => {
-        if(this.isPaused) {
+        if (this.isPaused) {
           this.isPaused = false;
           this.animate();
         }
       })
     }
 
+    // criar vertex
+    if ((event.key === 'e' || event.key === 'E') && !!this.nodeSelecionado) {
+      console.log('e')
+
+      // primeiro clique
+      if (!this.temporaryVertex) {
+        this.temporaryNodeVertex = createNodeHelperOptions({ radius: 0, id: -999, position: this.nodeSelecionado.position })
+        this.temporaryVertex = { node1: this.nodeSelecionado, node2: this.temporaryNodeVertex, id: -999, vertexStyleType: 4 }
+      }
+
+      // segundo clique
+      else if (this.temporaryVertex) {
+        // adiciona um novo vertex
+
+        //verifica se ja existe algum vertex entre nodeselecionado e temporaryNodeVertex
+        let vertexes = this.flowVertex.filter(vertex => {
+
+          let test1 = this.temporaryVertex?.node1.id == vertex.node1.id && this.nodeSelecionado?.id == vertex.node2.id
+          let test2 = this.temporaryVertex?.node1.id == vertex.node2.id && this.nodeSelecionado?.id == vertex.node1.id
+          let test3 = this.temporaryVertex?.node2.id == vertex.node1.id && this.nodeSelecionado?.id == vertex.node1.id
+          let test4 = this.temporaryVertex?.node2.id == vertex.node2.id && this.nodeSelecionado?.id == vertex.node2.id
+
+          return test1 || test2 || test3 || test4
+
+        })
+
+        if (vertexes.length == 0) {
+          this.addVertex()
+        }
+        else {
+          console.log("não é possivel adicionar, conexão ja existente")
+        }
+
+        this.temporaryVertex = undefined
+      }
+
+    }
+
 
     // console de testes
-    if(event.key === 'l'|| event.key === 'L') {
+    if (event.key === 'l' || event.key === 'L') {
       console.log("flow nodes", this.flowNodes)
       console.log("flow vertex", this.flowVertex)
+      console.log("mouse track node", this.temporaryNodeVertex?.position)
+      console.log("mouse track vertex", this.temporaryVertex)
+      console.log('height x width', this.boardHeight, this.boardWidth)
+      console.log("node selecionado", this.nodeSelecionado?.id)
+    }
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  trackMousePosition(event: MouseEvent): void {
+    if (!!this.temporaryVertex?.node1) {
+      this.temporaryVertex.node2.position = { x: event.clientX - this.boardWidth, y: event.clientY - this.boardHeight };
     }
   }
 

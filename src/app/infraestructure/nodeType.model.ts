@@ -1,8 +1,8 @@
 import { rnd } from "./rng.util";
 import { Vector } from "./vector.model";
-import { vertexType } from "./vertex.model";
+import { vertexType } from "./vertexType.model";
 
-export interface nodeType {
+export type nodeType = {
   id: number;
   position: Vector;
   positionOffset: Vector;
@@ -12,7 +12,7 @@ export interface nodeType {
   vertex: vertexType [];
 }
 
-export interface NodeOption {
+export type NodeOption = {
   id?: number;
   position?: Vector;
   positionOffset?: Vector;

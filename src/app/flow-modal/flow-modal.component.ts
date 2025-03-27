@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, inject, OnInit, ViewChild } from '@angula
 import { modalType } from '../infraestructure/modalType.model';
 import { MAT_DIALOG_DATA, MatDialogContent } from '@angular/material/dialog';
 import { MatTable, MatTableModule } from '@angular/material/table';
-import { vertexType } from '../infraestructure/vertex.model';
+import { vertexType } from '../infraestructure/vertexType.model';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { nodeType } from '../infraestructure/nodeType.model';
@@ -92,7 +92,7 @@ export class FlowModalComponent implements OnInit {
     // adiciona o vertex
     let node1 = this.data.selectedNode
     let node2 = this.nodeNewVertex
-    let vertex: vertexType = { id: this.service.getUniqueIdVertex(), node1, node2, type: 0 }
+    let vertex: vertexType = { id: this.service.getUniqueIdVertex(), node1, node2, vertexStyleType: 0 }
 
     node1.vertex.push(vertex)
     node2.vertex.push(vertex)

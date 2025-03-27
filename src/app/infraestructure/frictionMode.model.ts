@@ -1,4 +1,4 @@
-export interface FrictionMode {
+export type FrictionMode = {
   key: string,
   value: number
 }

@@ -1,7 +1,7 @@
 import { nodeType } from "./nodeType.model";
-import { vertexType } from "./vertex.model";
+import { vertexType } from "./vertexType.model";
 
-export interface modalType {
+export type modalType = {
 
   selectedNode: nodeType,
   flowNodes: nodeType[],

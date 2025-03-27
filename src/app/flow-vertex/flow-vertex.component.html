@@ -1,7 +1,8 @@
 <svg class="lineboard" #svg>
   <line [attr.x1]="(data()!.node1.position.x + (width/2)) || 0" [attr.y1]="(data()!.node1.position.y + (heigh/2)) || 0"
-        [attr.x2]="(data()!.node2.position.x + (width/2)) || 0" [attr.y2]="(data()!.node2.position.y + (heigh/2)) || 0"
-        stroke="black" stroke-width="2" />
+    [attr.x2]="(data()!.node2.position.x + (width/2)) || 0" [attr.y2]="(data()!.node2.position.y + (heigh/2)) || 0"
+    stroke="black" stroke-width="2" [attr.stroke-dasharray]="data()?.vertexStyleType == 4 ? '5 5' : '0'" />
+
 </svg>
 <!-- <div class="info">
   {{data()!.node1.position.x}}

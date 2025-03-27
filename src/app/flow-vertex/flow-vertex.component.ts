@@ -1,9 +1,10 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, input, ViewChild } from '@angular/core';
-import { vertexType } from '../infraestructure/vertex.model';
+import { vertexType } from '../infraestructure/vertexType.model';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-flow-vertex',
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './flow-vertex.component.html',
   styleUrl: './flow-vertex.component.scss'
 })
