@@ -42,21 +42,30 @@ export class FlowBoardComponent implements AfterViewInit {
 
   constructor(private nodeService: NodeService, private cdRef: ChangeDetectorRef, private frictionService: FrictionService,) {
 
-    let node1: nodeType = createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: 300, y: 200 }, velocity: { x: 10, y: 0 } })
-    let node2: nodeType = createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: 300, y: -200 }, velocity: { x: 0, y: 0 } })
-    let vertexNovo: vertexType = { id: 0, node1, node2, vertexStyleType: 0 }
-    node1.vertex.push(vertexNovo)
-    node2.vertex.push(vertexNovo)
+    let node1: nodeType = createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: 300, y: 200 }, velocity: { x: -2, y: 0 }, radius: 80 })
+    let node2: nodeType = createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: 200, y: -200 }, velocity: { x: -2, y: 0 }, radius: 80 })
+    let vertexManual1: vertexType = { id: 0, node1, node2, vertexStyleType: 0 }
+    node1.vertex.push(vertexManual1)
+    node2.vertex.push(vertexManual1)
     // precisa?
-    vertexNovo.node1 = node1
-    vertexNovo.node2 = node2;
+    vertexManual1.node1 = node1
+    vertexManual1.node2 = node2;
 
     this.flowNodes.push(node1);
     this.flowNodes.push(node2);
-    this.flowVertex.push(vertexNovo)
+    this.flowVertex.push(vertexManual1)
 
-    this.flowNodes.push(createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: 0, y: 0 } }))
-    this.flowNodes.push(createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: -400, y: -200 } }))
+    let node3: nodeType = createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: 0, y: 100 }, velocity: { x: 2, y: 0 }, radius: 100 })
+    let node4: nodeType = createNodeHelperOptions({ id: this.nodeService.getUniqueId(), position: { x: 0, y: -350 }, velocity: { x: 2, y: 0 }, radius: 100 })
+    // let vertexManual2: vertexType = { id: -1, node1: node4, node2: node2, vertexStyleType: 0 };
+
+    // vertexManual2.node1 = node4
+    // vertexManual2.node2 = node2
+
+    this.flowNodes.push(node3)
+    // this.flowNodes.push(node4)
+    // this.flowVertex.push(vertexManual2)
+
   }
 
   // ----------------- animation -----------------
@@ -122,6 +131,7 @@ export class FlowBoardComponent implements AfterViewInit {
         }
       }
       this.checkWallCollision(this.flowNodes[i]);
+      this.checkVertexCollision(this.flowNodes[i]);
     }
   }
 
@@ -140,6 +150,133 @@ export class FlowBoardComponent implements AfterViewInit {
     if (node.position.y + node.radius / 2 >= this.boardHeight + 2 || node.position.y - node.radius / 2 <= -this.boardHeight + 2) {
       node.velocity.y = -node.velocity.y;
     }
+  }
+
+  //checa se algum node esta fazendo intercessão com algum vertice
+  private checkVertexCollision(node: nodeType): void {
+
+    this.flowVertex.forEach(vertex => {
+      if (vertex.node1.id == node.id || vertex.node2.id == node.id)
+        return;
+
+      // Vetor da linha
+      const lineVec: Vector = { x: vertex.node2.position.x - vertex.node1.position.x, y: vertex.node2.position.y - vertex.node1.position.y };
+
+
+      const v: Vector = { x: vertex.node2.position.x - vertex.node1.position.x, y: vertex.node2.position.y - vertex.node1.position.y };
+      const w: Vector = { x: node.position.x - vertex.node1.position.x, y: node.position.y - vertex.node1.position.y }
+
+      //const t = Math.max(0, Math.min(1, (v.x * w.x) + (v.y * w.y)) / ((v.x * v.x) + (v.y * v.y)))
+      const tUnclamped = ((v.x * w.x) + (v.y * w.y)) / ((v.x * v.x) + (v.y * v.y))
+      const t = Math.max(0, Math.min(1, tUnclamped)) // clamp entre 0 e 1
+
+      // ponto mais proximo no vertex
+      const pp: Vector = { x: (vertex.node1.position.x + t * (vertex.node2.position.x - vertex.node1.position.x)), y: (vertex.node1.position.y + t * (vertex.node2.position.y - vertex.node1.position.y)) }
+
+      //distancia do node até o ponto mais proximo
+      const dis = Math.sqrt(((pp.x - node.position.x) ** 2 + (pp.y - node.position.y) ** 2)) - node.radius / 2
+
+      // if (node.id == 3) console.log(dis.toFixed(2))
+
+      if (dis > 2) {
+        return;
+      }
+      else {
+
+        // -------------------------------------------------------------------------------------------------------------------------
+
+        // const collisionVec: Vector = { x: node.position.x - pp.x, y: node.position.y - pp.y }
+        // const maxVelocityVector: Vector = {
+        //   x: Math.sign(collisionVec.x) * (Math.abs(node.velocity.x) + Math.abs(vertex.node1.velocity.x) + Math.abs(vertex.node2.velocity.x)),
+        //   y: Math.sign(collisionVec.y) * (Math.abs(node.velocity.y) + Math.abs(vertex.node1.velocity.y) + Math.abs(vertex.node2.velocity.y))
+        // }
+
+        // // Normalizar o vetor de força
+        // const normalForce: Vector =
+        // {
+        //   x: ((node.radius / 2) + dis) > 0 ? (Math.sign(collisionVec.x) * (1 / ((node.radius / 2) + dis)) * 10) : rnd(-1, 1),
+        //   y: ((node.radius / 2) + dis) > 0 ? (Math.sign(collisionVec.y) * (1 / ((node.radius / 2) + dis)) * 10) : rnd(-1, 1),
+        // }
+
+        // node.velocity.x += normalForce.x
+        // node.velocity.y += normalForce.y
+
+        // vertex.node1.velocity.x -= normalForce.x / 2
+        // vertex.node2.velocity.x -= normalForce.x / 2
+        // vertex.node1.velocity.y -= normalForce.y / 2
+        // vertex.node2.velocity.y -= normalForce.y / 2
+
+
+        // -------------------------------------------------------------------------------------------------------------------------
+
+        // const penetration = (node.radius / 2) - dis; // quanto está "dentro" da linha
+        // if (penetration > 0) {
+        //   const penetrationRatio = penetration / (node.radius / 2); // vai de 0 a 1
+
+        //   const repelStrength = 1; // ajustável: 0.1 (suave) até 1 (forte)
+
+        //   const maxForce = Math.hypot(node.velocity.x, node.velocity.y);
+        //   const normalMag = Math.min(penetrationRatio * repelStrength * maxForce, maxForce);
+
+        //   // vetor direção da força (normalizada)
+        //   const dx = node.position.x - pp.x;
+        //   const dy = node.position.y - pp.y;
+        //   const len = Math.hypot(dx, dy);
+        //   const nx = dx / (len || 1);
+        //   const ny = dy / (len || 1);
+
+        //   const normalForce = {
+        //     x: nx * normalMag,
+        //     y: ny * normalMag,
+        //   };
+
+        //   node.velocity.x += normalForce.x;
+        //   node.velocity.y += normalForce.y;
+
+        //   // Distribui a força nos vértices para equilíbrio
+        //   vertex.node1.velocity.x -= normalForce.x / 2;
+        //   vertex.node1.velocity.y -= normalForce.y / 2;
+        //   vertex.node2.velocity.x -= normalForce.x / 2;
+        //   vertex.node2.velocity.y -= normalForce.y / 2;
+        // }
+
+
+        // -------------------------------------------------------------------------------------------------------------------------
+
+        // 1. Direção da colisão
+        const dx = node.position.x - pp.x;
+        const dy = node.position.y - pp.y;
+        const dist = Math.hypot(dx, dy);
+        const normal = { x: dx / dist, y: dy / dist };
+
+        // 2. Projeção da velocidade relativa no vetor normal
+        const vRel = {
+          x: node.velocity.x - (vertex.node1.velocity.x + vertex.node2.velocity.x) / 2,
+          y: node.velocity.y - (vertex.node1.velocity.y + vertex.node2.velocity.y) / 2,
+        };
+
+        const relVelDotNormal = vRel.x * normal.x + vRel.y * normal.y;
+
+        // Se estiver se aproximando (dot < 0), aplica reação
+        if (relVelDotNormal < 0) {
+          const impulse = -2 * relVelDotNormal / 3; // divide por número de objetos envolvidos (1+2)
+
+          // Aplica impulso
+          node.velocity.x += impulse * normal.x;
+          node.velocity.y += impulse * normal.y;
+
+          vertex.node1.velocity.x -= (impulse * normal.x) / 2;
+          vertex.node1.velocity.y -= (impulse * normal.y) / 2;
+
+          vertex.node2.velocity.x -= (impulse * normal.x) / 2;
+          vertex.node2.velocity.y -= (impulse * normal.y) / 2;
+        }
+
+        // -------------------------------------------------------------------------------------------------------------------------
+      }
+    })
+
+
   }
 
   // calculo de colisões
@@ -269,7 +406,6 @@ export class FlowBoardComponent implements AfterViewInit {
   click(event: any, node: nodeType) {
     this.accessNode(node, n => {
       n.positionOffset = { x: event.clientX - this.boardWidth, y: event.clientY - this.boardHeight };
-      n.momentum = Math.sqrt(Math.max(n.momentum, Math.abs(n.velocity.x) + Math.abs(n.velocity.y)));
       n.velocity = { x: 0, y: 0 };
     });
   }
@@ -279,7 +415,6 @@ export class FlowBoardComponent implements AfterViewInit {
   panEvent(event: any, node: nodeType): void {
     this.accessNode(node, n => {
       n.position = { x: event.deltaX + n.positionOffset.x, y: event.deltaY + n.positionOffset.y };
-      n.momentum = Math.max(n.momentum, Math.abs(n.velocity.x) + Math.abs(n.velocity.y));
       n.velocity = { x: 0, y: 0 };
     })
 
@@ -290,8 +425,10 @@ export class FlowBoardComponent implements AfterViewInit {
     this.flowNodes = this.flowNodes.map(n => {
       if (n.id === node.id) {
         n.positionOffset = { x: n.position.x, y: n.position.y };
-        n.velocity = this.vectorConversion(event.angle, node.momentum);
-        n.momentum = 0;
+        n.velocity = {
+          x: event.velocityX,
+          y: event.velocityY
+        }
       }
       return n;
     });
